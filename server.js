@@ -1,38 +1,26 @@
-var express = require("express");
-var bodyParser = require("body-parser");
-var methodOverride = require("method-override"); // allows for the HTML 5 not existing
-var mysql = require("mysql");
-var exphbs = require("express-handlebars");
+var express = require('express');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override')
 
 var app = express();
-var port = 3000;
 
-// Serve static content for the app from the "public" directory in the application directory.
-app.use(express.static(__dirname + "/public"));
+//Serve static content for the app from the "public" directory in the application directory.
+app.use(express.static(process.cwd() + '/public'));
 
-// Parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+	extended: false
+}))
+// override with POST having ?_method=DELETE
+app.use(methodOverride('_method'))
+var exphbs = require('express-handlebars');
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main',
+}));
+app.set('view engine', 'handlebars');
 
-// Override with POST having ?_method=DELETE
-app.use(methodOverride("_method"));
+var routes = require('./controllers/burgers_controller.js');
+app.use('/', routes);
 
-app.engine("handlebars", exphbs({ defaultLayout: "main" }));
-app.set("view engine", "handlebars");
+var port = process.env.PORT || 3000;
+app.listen(port);
 
-// Connecton to Database
-var connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "Badger32",
-    database: "eatdaburger2"
-});
-
-connection.connect(function(err) {
-    if (err) {
-        console.error("error connecting: " + err.stack);
-        return;
-    }
-
-    console.log("You are connected to EatDaBurger APP using connection : " + connection.threadId);
-
-});
